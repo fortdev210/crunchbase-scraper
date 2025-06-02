@@ -1,7 +1,17 @@
 import requests
 import json
 
+from fake_useragent import UserAgent
 from config import email, password
+
+ua = UserAgent()
+
+def init_headers():
+    headers = {
+        'Content-Type': 'application/json',
+        'User-Agent': ua.random
+    }
+    return headers
 
 def get_user_session(email: str, password: str):
     url = "https://www.crunchbase.com/v4/cb/sessions"
@@ -11,7 +21,7 @@ def get_user_session(email: str, password: str):
         "password": password
     })
 
-    headers = {'Content-Type': 'application/json'}
+    headers = init_headers()
     response = requests.request("POST", url, headers=headers, data=payload)
 
     if response.status_code == 201:
@@ -60,11 +70,12 @@ def get_organization(cookies, company:str):
         }
       ]
     })
-
-    headers = {
-      'Content-Type': 'application/json',
-      'Cookie': '; '.join([f'{cookie.name}={cookie.value}' for cookie in cookies]),
-    }
+    
+    headers = init_headers()
+    # Add cookies to headers
+    headers.update({
+        'Cookie': '; '.join([f'{cookie.name}={cookie.value}' for cookie in cookies])
+    })
 
     response = requests.post(url, headers=headers, params=params, data=payload)
     
